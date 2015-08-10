@@ -1,5 +1,6 @@
 ﻿using NHibernate.FormatSQL.Formatter;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -84,16 +85,24 @@ namespace LINQPad.NHibernate.FormatSQL
                     }
                 }
 
-                // ( create more readable column and table name aliases for Sql output ) 
-                output = output.EnsureLastCharacterExists(';');
+                // ( wrap in an exception handler for now for safety until full test coverage )
+                try {
 
-                ISqlStatement sqlStatement = nhibernateFormatter.TryParsSql(output);
-                if (sqlStatement.SqlStatementParsingException == null)
-                {
-                    string formattedInput = sqlStatement.ApplySuggestedFormat();
+                    // ( create more readable column and table name aliases for Sql output ) 
+                    output = output.EnsureLastCharacterExists(';');
 
-                    // ( formatted column and table names )
-                    output = formattedInput;
+                    ISqlStatement sqlStatement = nhibernateFormatter.TryParsSql(output);
+                    if (sqlStatement.SqlStatementParsingException == null)
+                    {
+                        string formattedInput = sqlStatement.ApplySuggestedFormat();
+
+                        // ( formatted column and table names )
+                        output = formattedInput;
+                    }
+                }
+                catch (Exception exception) {
+                    // ( dont throw the exception instead continue with unformatted output )
+                    Debug.Print(exception.ToString());
                 }
 
                 output = "-- Region Query: " + ++counter + "\r\n" + output.Trim() + "\r\n-- EndRegion";
