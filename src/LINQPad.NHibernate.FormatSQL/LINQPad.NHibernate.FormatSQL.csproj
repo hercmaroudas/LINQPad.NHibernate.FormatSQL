@@ -34,6 +34,10 @@
       <HintPath>..\packages\LINQPad.4.51.3\lib\net40\LINQPad.exe</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="NHibernate.FormatSQL.Formatter, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\NHibernate.FormatSQL.Formatter.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

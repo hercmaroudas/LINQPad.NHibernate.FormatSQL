@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NHibernate.FormatSQL.Formatter;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,9 +12,18 @@ namespace LINQPad.NHibernate.FormatSQL
         private TextWriter stdOutWriter;
         private int counter;
         private bool notifyWhenSqlOutputRedirected;
+        private NHibernateSqlOutputFormatter nhibernateFormatter;
+
         public override Encoding Encoding { get { return Encoding.ASCII; } }
 
+        public NHibernateSqlOutputRedirector()
+        {
+            nhibernateFormatter = new NHibernateSqlOutputFormatter();
+            nhibernateFormatter.SqlIdentifiers = new string[] { ";" };
+        }
+
         public NHibernateSqlOutputRedirector(bool notifyWhenSqlOutputRedirected = false)
+            : this()
         {
             this.stdOutWriter = Console.Out;
             this.counter = 0;
@@ -72,6 +82,18 @@ namespace LINQPad.NHibernate.FormatSQL
                         }
                         output = output.Replace(parameter.key, newValue);
                     }
+                }
+
+                // ( create more readable column and table name aliases for Sql output ) 
+                output = output.EnsureLastCharacterExists(';');
+
+                ISqlStatement sqlStatement = nhibernateFormatter.TryParsSql(output);
+                if (sqlStatement.SqlStatementParsingException == null)
+                {
+                    string formattedInput = sqlStatement.ApplySuggestedFormat();
+
+                    // ( formatted column and table names )
+                    output = formattedInput;
                 }
 
                 output = "-- Region Query: " + ++counter + "\r\n" + output.Trim() + "\r\n-- EndRegion";
