@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LINQPad.NHibernate.FormatSQ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LINQPad.NHibernate.FormatSQL.Sample.Tests", "LINQPad.NHibernate.FormatSQL.Sample.Tests\LINQPad.NHibernate.FormatSQL.Sample.Tests.csproj", "{B295ACFC-D348-4DF6-90D8-E98FAE8B10BE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NHibernate.FormatSQL.Formatter", "NHibernate.FormatSQL.Formatter\NHibernate.FormatSQL.Formatter.csproj", "{2EE2D951-3A44-4645-8FAE-4257EB3504F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NHibernate.FormatSQL.Formatter.Tests", "NHibernate.FormatSQL.Formatter.Tests\NHibernate.FormatSQL.Formatter.Tests.csproj", "{3A882031-C09D-476B-A2BB-CBFB21410877}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{B295ACFC-D348-4DF6-90D8-E98FAE8B10BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B295ACFC-D348-4DF6-90D8-E98FAE8B10BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B295ACFC-D348-4DF6-90D8-E98FAE8B10BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EE2D951-3A44-4645-8FAE-4257EB3504F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EE2D951-3A44-4645-8FAE-4257EB3504F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EE2D951-3A44-4645-8FAE-4257EB3504F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EE2D951-3A44-4645-8FAE-4257EB3504F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A882031-C09D-476B-A2BB-CBFB21410877}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A882031-C09D-476B-A2BB-CBFB21410877}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A882031-C09D-476B-A2BB-CBFB21410877}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A882031-C09D-476B-A2BB-CBFB21410877}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
