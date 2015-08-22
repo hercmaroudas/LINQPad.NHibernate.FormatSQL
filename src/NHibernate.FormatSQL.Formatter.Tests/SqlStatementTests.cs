@@ -101,39 +101,147 @@ namespace NHibernate.FormatSQL.Formatter.Tests
             try
             {
                 NHibernateSqlOutputFormatter nhibernateFormatter = new NHibernateSqlOutputFormatter();
-                nhibernateFormatter.SqlIdentifiers = new string[] { "NHibernate.SQL:", Environment.NewLine };
+                nhibernateFormatter.SqlIdentifiers = new string[] { "NHibernate.SQL:" };
 
-                sqlStatement = nhibernateFormatter.TryParsSql(Properties.SecureResources.SQL1);
+                IList<ISqlStatement> sqlStatements = nhibernateFormatter.GetSqlFromDebugOutput(Properties.SecureResources.SQL1);
+                var sqlStatement = sqlStatements[0];
+                var sqlSelectStatement = sqlStatement as SqlSelectStatement;
                 string appliedFormatSql = sqlStatement.ApplySuggestedFormat();
-                Assert.IsTrue(appliedFormatSql.Length == 3304);
+                Assert.IsTrue(appliedFormatSql.Length == 3454);
+                Assert.IsTrue(sqlStatement.ColumnNames.Count == 48);
+                Assert.IsTrue(sqlStatement.Parameters.Count == 1);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.Value.Length == 3061);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.SqlStatements.Count == 6);
+                Assert.IsTrue(sqlSelectStatement.FromPart.Value.Length == 30);
+                Assert.IsTrue(sqlSelectStatement.FromPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.WherePart.Value.Length == 29);
 
-                sqlStatement = nhibernateFormatter.TryParsSql(Properties.SecureResources.SQL3);
+                sqlStatement = sqlStatements[1];
+                sqlSelectStatement = sqlStatement as SqlSelectStatement;
                 appliedFormatSql = sqlStatement.ApplySuggestedFormat();
-                Assert.IsTrue(appliedFormatSql.Length == 347);
+                Assert.IsTrue(appliedFormatSql.Length == 454);
+                Assert.IsTrue(sqlStatement.ColumnNames.Count == 11);
+                Assert.IsTrue(sqlStatement.Parameters.Count == 1);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.Value.Length == 361);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.FromPart.Value.Length == 23);
+                Assert.IsTrue(sqlSelectStatement.FromPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.WherePart.Value.Length == 21);
 
-                sqlStatement = nhibernateFormatter.TryParsSql(Properties.SecureResources.SQL5);
+                sqlStatement = sqlStatements[2];
+                sqlSelectStatement = sqlStatement as SqlSelectStatement;
+                appliedFormatSql = sqlStatement.ApplySuggestedFormat();
+                Assert.IsTrue(appliedFormatSql.Length == 2136);
+                Assert.IsTrue(sqlStatement.ColumnNames.Count == 29);
+                Assert.IsTrue(sqlStatement.Parameters.Count == 4);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.Value.Length == 1121);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.FromPart.Value.Length == 595);
+                Assert.IsTrue(sqlSelectStatement.FromPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.WherePart.Value.Length == 121);
+
+                sqlStatements = nhibernateFormatter.GetSqlFromDebugOutput(Properties.SecureResources.SQL3);
+                sqlStatement = sqlStatements[3];
+                sqlSelectStatement = sqlStatement as SqlSelectStatement;
+                appliedFormatSql = sqlStatement.ApplySuggestedFormat();
+                Assert.IsTrue(appliedFormatSql.Length == 366);
+                Assert.IsTrue(sqlStatement.ColumnNames.Count == 4);
+                Assert.IsTrue(sqlStatement.Parameters.Count == 2);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.Value.Length == 93);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.FromPart.Value.Length == 32);
+                Assert.IsTrue(sqlSelectStatement.FromPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.WherePart.Value.Length == 48);
+
+                sqlStatement = sqlStatements[5];
+                sqlSelectStatement = sqlStatement as SqlSelectStatement;
+                appliedFormatSql = sqlStatement.ApplySuggestedFormat();
+                Assert.IsTrue(appliedFormatSql.Length == 378);
+                Assert.IsTrue(sqlStatement.ColumnNames.Count == 4);
+                Assert.IsTrue(sqlStatement.Parameters.Count == 2);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.Value.Length == 93);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.FromPart.Value.Length == 32);
+                Assert.IsTrue(sqlSelectStatement.FromPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.WherePart.Value.Length == 48);
+
+                sqlStatements = nhibernateFormatter.GetSqlFromDebugOutput(Properties.SecureResources.SQL5);
+                sqlStatement = sqlStatements[7];
+                sqlSelectStatement = sqlStatement as SqlSelectStatement;
                 appliedFormatSql = sqlStatement.ApplySuggestedFormat();
                 Assert.IsTrue(appliedFormatSql.Length == 1634);
+                Assert.IsTrue(sqlStatement.ColumnNames.Count == 8);
+                Assert.IsTrue(sqlStatement.Parameters.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.Value.Length == 1016);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.SqlStatements.Count == 5);
+                Assert.IsTrue(sqlSelectStatement.FromPart.Value.Length == 325);
+                Assert.IsTrue(sqlSelectStatement.FromPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.WherePart.Value.Length == 65);
 
-                sqlStatement = nhibernateFormatter.TryParsSql(Properties.SecureResources.SQL6);
+                sqlStatements = nhibernateFormatter.GetSqlFromDebugOutput(Properties.SecureResources.SQL6);
+                sqlStatement = sqlStatements[8];
+                sqlSelectStatement = sqlStatement as SqlSelectStatement;
                 appliedFormatSql = sqlStatement.ApplySuggestedFormat();
                 Assert.IsTrue(appliedFormatSql.Length == 1811);
+                Assert.IsTrue(sqlStatement.ColumnNames.Count == 27);
+                Assert.IsTrue(sqlStatement.Parameters.Count == 6);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.Value.Length == 931);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.FromPart.Value.Length == 270);
+                Assert.IsTrue(sqlSelectStatement.FromPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.WherePart.Value.Length == 187);
 
-                sqlStatement = nhibernateFormatter.TryParsSql(Properties.SecureResources.SQL7);
+                sqlStatements = nhibernateFormatter.GetSqlFromDebugOutput(Properties.SecureResources.SQL7);
+                sqlStatement = sqlStatements[9];
+                sqlSelectStatement = sqlStatement as SqlSelectStatement;
                 appliedFormatSql = sqlStatement.ApplySuggestedFormat();
                 Assert.IsTrue(appliedFormatSql.Length == 885);
+                Assert.IsTrue(sqlStatement.ColumnNames.Count == 2);
+                Assert.IsTrue(sqlStatement.Parameters.Count == 56);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.Value.Length == 45);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.FromPart.Value.Length == 33);
+                Assert.IsTrue(sqlSelectStatement.FromPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.WherePart.Value.Length == 426);
 
-                sqlStatement = nhibernateFormatter.TryParsSql(Properties.SecureResources.SQL8);
+                sqlStatements = nhibernateFormatter.GetSqlFromDebugOutput(Properties.SecureResources.SQL8);
+                sqlStatement = sqlStatements[10];
+                sqlSelectStatement = sqlStatement as SqlSelectStatement;
                 appliedFormatSql = sqlStatement.ApplySuggestedFormat();
                 Assert.IsTrue(appliedFormatSql.Length == 282);
+                Assert.IsTrue(sqlStatement.ColumnNames.Count == 1);
+                Assert.IsTrue(sqlStatement.Parameters.Count == 1);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.Value.Length == 26);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.FromPart.Value.Length == 33);
+                Assert.IsTrue(sqlSelectStatement.FromPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.WherePart.Value.Length == 46);
 
-                sqlStatement = nhibernateFormatter.TryParsSql(Properties.SecureResources.SQL9);
+                sqlStatements = nhibernateFormatter.GetSqlFromDebugOutput(Properties.SecureResources.SQL9);
+                sqlStatement = sqlStatements[11];
+                sqlSelectStatement = sqlStatement as SqlSelectStatement;
                 appliedFormatSql = sqlStatement.ApplySuggestedFormat();
                 Assert.IsTrue(appliedFormatSql.Length == 735);
+                Assert.IsTrue(sqlStatement.ColumnNames.Count == 17);
+                Assert.IsTrue(sqlStatement.Parameters.Count == 1);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.Value.Length == 588);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.FromPart.Value.Length == 27);
+                Assert.IsTrue(sqlSelectStatement.FromPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.WherePart.Value.Length == 37);
 
-                sqlStatement = nhibernateFormatter.TryParsSql(Properties.SecureResources.SQL10);
+                sqlStatements = nhibernateFormatter.GetSqlFromDebugOutput(Properties.SecureResources.SQL10);
+                sqlStatement = sqlStatements[12];
+                sqlSelectStatement = sqlStatement as SqlSelectStatement;
                 appliedFormatSql = sqlStatement.ApplySuggestedFormat();
                 Assert.IsTrue(appliedFormatSql.Length == 156);
+                Assert.IsTrue(sqlStatement.ColumnNames.Count == 1);
+                Assert.IsTrue(sqlStatement.Parameters.Count == 1);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.Value.Length == 27);
+                Assert.IsTrue(sqlSelectStatement.SelectPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.FromPart.Value.Length == 27);
+                Assert.IsTrue(sqlSelectStatement.FromPart.SqlStatements.Count == 0);
+                Assert.IsTrue(sqlSelectStatement.WherePart.Value.Length == 43);
 
                 IList<ISqlStatement> sqlSelectStatements = nhibernateFormatter.GetSqlFromDebugOutput(Properties.SecureResources.SQL3);
                 foreach (var statement in sqlSelectStatements)
@@ -144,9 +252,9 @@ namespace NHibernate.FormatSQL.Formatter.Tests
                     #endif
                 }
             }
-            catch (Exception exception)
+            catch
             {
-                Assert.IsNotInstanceOfType(exception, typeof(Exception));
+                throw;
             }
             finally
             {
@@ -202,9 +310,63 @@ namespace NHibernate.FormatSQL.Formatter.Tests
                     #endif
                 }
             }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                SecureResources.ResourceManager.ReleaseAllResources();
+            }
+        }
+
+        [TestMethod]
+        public void ApplySuggestedFormatAliasQuotedValuesTest()
+        {
+            try
+            {
+                NHibernateSqlOutputFormatter nhibernateFormatter = new NHibernateSqlOutputFormatter();
+                
+                nhibernateFormatter.SqlIdentifiers = new string[] { Environment.NewLine };
+                sqlStatement = nhibernateFormatter.TryParsSql(SecureResources.ColumnNameAliasQuotedValues);
+                Assert.IsTrue(sqlStatement.Parameters.Count == 2);
+
+                string appliedParameterSql = sqlStatement.ApplyParameters();
+                Assert.IsFalse(appliedParameterSql.Contains("@"));
+
+                string appliedFormatSql = sqlStatement.ApplySuggestedFormat();
+                Assert.IsTrue(appliedFormatSql.Length == 1375);
+            }
             catch (Exception exception)
             {
                 Assert.IsNotInstanceOfType(exception, typeof(Exception));
+            }
+            finally
+            {
+                SecureResources.ResourceManager.ReleaseAllResources();
+            }
+        }
+
+        [TestMethod]
+        public void ApplySuggestedFormatNoColumnTableNameAliasTest()
+        {
+            try
+            {
+                NHibernateSqlOutputFormatter nhibernateFormatter = new NHibernateSqlOutputFormatter();
+
+                nhibernateFormatter.SqlIdentifiers = new string[] { Environment.NewLine };
+                sqlStatement = nhibernateFormatter.TryParsSql(SecureResources.NoColumnOrTableNameAliases);
+                Assert.IsTrue(sqlStatement.Parameters.Count == 1);
+
+                string appliedParameterSql = sqlStatement.ApplyParameters();
+                Assert.IsFalse(appliedParameterSql.Contains("@"));
+
+                string appliedFormatSql = sqlStatement.ApplySuggestedFormat();
+                Assert.IsTrue(appliedFormatSql.Length == 195);
+            }
+            catch
+            {
+                throw;
             }
             finally
             {

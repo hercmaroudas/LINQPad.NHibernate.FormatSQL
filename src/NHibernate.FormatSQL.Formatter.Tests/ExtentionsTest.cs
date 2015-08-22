@@ -19,36 +19,44 @@ namespace NHibernate.FormatSQL.Formatter.Tests
         }
 
         [TestMethod]
-        public void SplitByWordTest()
+        public void SplitAndJoinTest()
         {
             string input = "This is a hello world split by word example. Hello world!";
-            string[] output = input.SplitByWord(new string[] { "hello", "world" });
+            string[] output = input.SplitAndJoin(new string[] { "hello", "world" });
             Assert.IsTrue(output.Length == 3);
             Assert.IsTrue(output[0] == "This is a");
             Assert.IsTrue(output[1] == "split by word example. Hello");
             Assert.IsTrue(output[2] == "!");
 
             input = "This is a hello world split by word example. hello world!";
-            output = input.SplitByWord(new string[] { "hello", "world" });
+            output = input.SplitAndJoin(new string[] { "hello", "world" });
             Assert.IsTrue(output.Length == 3);
             Assert.IsTrue(output[0] == "This is a");
             Assert.IsTrue(output[1] == "split by word example.");
             Assert.IsTrue(output[2] == "!");
 
             input = "hello world split by word example. hello world!";
-            output = input.SplitByWord(new string[] { "hello", "world" });
+            output = input.SplitAndJoin(new string[] { "hello", "world" });
             Assert.IsTrue(output.Length == 2);
             Assert.IsTrue(output[0] == "split by word example.");
             Assert.IsTrue(output[1] == "!");
 
             input = "hello world!";
-            output = input.SplitByWord(new string[] { "hello", "world" });
+            output = input.SplitAndJoin(new string[] { "hello", "world" });
             Assert.IsTrue(output.Length == 1);
             Assert.IsTrue(output[0] == "!");
 
             input = "hello world";
-            output = input.SplitByWord(new string[] { "hello", "world" });
+            output = input.SplitAndJoin(new string[] { "hello", "world" });
             Assert.IsTrue(output.Length == 0);
+        }
+
+        [TestMethod]
+        public void SplitByWordTest()
+        {
+            var input = @"@p0 = 'fsiadmin', @p1 = '', @p2 = 'FSI Admin', @p3 = 'h9uS5eD5qrclJrbRXnI6YA==', @p4 = 'VSjNlEBnNk24uDYh08EsQg==', @p5 = '21/10/2111 00:00:00', @p6 = '1',  @p7 = '', @p8 = '', @p9 = 'False', @p10 = '10746', @p11 = '', @p12 = '21/08/2015 14:08:01', @p13 = '0c0de31aca794eae80fdc98132b14b5b', @p14 = '0c0de31aca794eae80fdc98132b14b5b';";
+            var output = input.SplitByWord(new string[] { "=", "," });
+            Assert.IsTrue(output.Length == 30);
         }
 
         [TestMethod]

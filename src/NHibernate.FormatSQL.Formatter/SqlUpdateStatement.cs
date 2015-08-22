@@ -6,8 +6,10 @@ namespace NHibernate.FormatSQL.Formatter
     {
         public override ISqlStatement Parse()
         {
-            Debug.Write("SqlUpdateStatement.Parse(): Currently only parsing SqlSelectStatement's are supported.");
-            return new SqlUpdateStatement();
+            SetParameterKeyValuePairs();
+            return this;
         }
     }
+
+
 }

@@ -45,7 +45,7 @@ namespace NHibernate.FormatSQL.Formatter
             int paramStartIndex = 0;
             string sqlSection = string.Empty;
             string parameterSection = string.Empty;
-            
+            this.parameters = new List<SqlParamKeyValuePair>();
             try
             {
                 // ( parameters are found after the first found semi colon (;) )
@@ -54,7 +54,7 @@ namespace NHibernate.FormatSQL.Formatter
                 if (!string.IsNullOrWhiteSpace(parameterSection))
                 {
                     sqlSection = Sql.Substring(0, paramStartIndex + 1).Replace(";", string.Empty).Trim();
-                    string[] parameters = parameterSection.Split(new char[] { '=', ',' });
+                    var parameters = parameterSection.SplitByWord(new string[] { "=", "," });
 
                     if (parameters.Length > 1)
                     {
@@ -79,7 +79,7 @@ namespace NHibernate.FormatSQL.Formatter
                                     }
                                 }
 
-                                // ( signals that a parameter datatype has been found )
+                                // ( signals that a parameter data type has been found )
                                 if (parameters[ix + 1].Contains("["))
                                 {
                                     dataType = parameters[ix + 1].Split(new string[] { "[", "]" }, StringSplitOptions.RemoveEmptyEntries)[1].Split(new string[] { "Type:", "(" }, StringSplitOptions.RemoveEmptyEntries)[0].Trim();
@@ -120,8 +120,10 @@ namespace NHibernate.FormatSQL.Formatter
         /// </returns>
         public string ApplyParameters()
         {
-            string replaceValue = string.Empty;
-            string sql = Sql.Substring(0, Sql.IndexOf(";") + 1);
+            bool isDate = false;
+            DateTime dateTime;
+            var replaceValue = string.Empty;
+            var sql = Sql.Substring(0, Sql.IndexOf(";") + 1);
 
             foreach (var parameter in Parameters)
             {
@@ -135,7 +137,15 @@ namespace NHibernate.FormatSQL.Formatter
                         replaceValue = string.Format("'{0}'", parameter.Value);
                         break;
                     case "datetime":
-                        replaceValue = string.Format("'{0}'", Convert.ToDateTime(parameter.Value).ToString("MM/dd/yyyy hh:mm:ss"));
+                        isDate = DateTime.TryParse(parameter.Value, out dateTime);
+                        if (isDate)
+                        {
+                            replaceValue = string.Format("'{0}'", dateTime.ToString("MM/dd/yyyy hh:mm:ss"));
+                        }
+                        else
+                        {
+                            replaceValue = parameter.Value;
+                        }
                         break;
                     case "int16":
                     case "int32":
@@ -170,25 +180,30 @@ namespace NHibernate.FormatSQL.Formatter
         /// </returns>
         public string ApplySuggestedFormat()
         {
-            // ( get applied parametered sql )
+            // ( get applied parameterized sql )
             string search = string.Empty;
             string sql = ApplyParameters();
 
             // ( replace all table names with proposed table names )
             foreach (var table in TableNames)
             {
-                search = string.Format(@"\b{0}\b", table.OriginalTableAliasName);
-                sql = Regex.Replace(sql, search, table.ProposedTableAliasName);
+                if (!string.IsNullOrWhiteSpace(table.OriginalTableAliasName))
+                {
+                    search = string.Format(@"\b{0}\b", table.OriginalTableAliasName);
+                    sql = Regex.Replace(sql, search, table.ProposedTableAliasName);
+                }
             }
 
             // ( replace all column names with proposed column names )
             foreach (var column in ColumnNames)
             {
-                search = string.Format(@"\b{0}\b", column.OriginalAliasName);
-                sql = Regex.Replace(sql, search, column.ProposedAliasName);
+                if (!string.IsNullOrWhiteSpace(column.OriginalAliasName))
+                {
+                    search = string.Format(@"\b{0}\b", column.OriginalAliasName);
+                    sql = Regex.Replace(sql, search, column.ProposedAliasName);
+                }
             }
 
-            // ( naughty but we i cant be arsed to find duplicate ";" right now and maybe forever :) ) 
             return sql.Replace(";", string.Empty).EnsureLastCharacterExists(';');
         }
 

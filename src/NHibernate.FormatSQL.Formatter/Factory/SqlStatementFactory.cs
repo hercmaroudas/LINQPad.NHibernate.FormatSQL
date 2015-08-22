@@ -61,13 +61,13 @@ namespace NHibernate.FormatSQL.Formatter
         }
 
         /// <summary>
-        /// Determines if the value passed in is a valid sql statament.
+        /// Determines if the value passed in is a valid sql statement.
         /// </summary>
         /// <param name="value">
         /// The value to check and parse.
         /// </param>
         /// <param name="possibleSql">
-        /// The sql that is outputed if value is valid sql.
+        /// The sql that is outputted if value is valid sql.
         /// </param>
         /// <returns>
         /// True if the value is a valid sql statement.
@@ -94,8 +94,6 @@ namespace NHibernate.FormatSQL.Formatter
                                 possibleSql = possibleSql.Substring(startIndex, possibleSql.Length - startIndex).Trim().EnsureLastCharacterExists(';');
                                 return true;
                             }
-                            else
-                                Console.WriteLine("not SQL");
                         }
                     }
                 }
@@ -338,13 +336,45 @@ namespace NHibernate.FormatSQL.Formatter
         }
 
         /// <summary>
+        /// Determines if a Sql keyword alias (as) is between braces.
+        /// </summary>
+        /// <param name="value">
+        /// The statement containing the (as) keyword.
+        /// </param>
+        public bool IsAsBetweenBraces(string value)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    return false;
+
+                var search = @"\bas\b";
+                var asMatches = Regex.Matches(value, search, RegexOptions.IgnoreCase);
+                if (asMatches.Count <= 0)
+                    return false;
+
+                var closeBraceMatches = Regex.Matches(value, @"\)");
+                if (closeBraceMatches.Count <= 0)
+                    return false;
+
+                return (asMatches[asMatches.Count - 1].Index < closeBraceMatches[closeBraceMatches.Count - 1].Index);
+                
+            }
+            catch
+            {
+                throw;
+            }
+            
+        }
+
+        /// <summary>
         /// Gets a unique name for the value passed in. If not unique a unique index is appended.
         /// </summary>
         /// <param name="name">
         /// The value to ensure is unique.
         /// </param>
         /// <returns>
-        /// A name that doesnt already internally exist.
+        /// A name that doesn't already internally exist.
         /// </returns>
         internal string GetUniqueName(string name)
         {

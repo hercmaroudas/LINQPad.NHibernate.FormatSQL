@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace NHibernate.FormatSQL.Formatter
 {
     /// <summary>
-    /// Class used to obtain NHibernate Sql from Viaual Studio output window and obtain NHibernate.FormatSQL.Formatter.ISqlStatement objects that can be used to format obscured table and column names.
+    /// Class used to obtain NHibernate Sql from Visual Studio output window and obtain NHibernate.FormatSQL.Formatter.ISqlStatement objects that can be used to format obscured table and column names.
     /// </summary>
     public class NHibernateSqlOutputFormatter
     {
-        private SqlStatementFactory sqlStatementFactory = new SqlStatementFactory();
+        private SqlStatementFactory sqlStatementFactory;
 
         private IList<ISqlStatement> sqlStatements;
         /// <summary>
@@ -21,6 +23,11 @@ namespace NHibernate.FormatSQL.Formatter
         /// Identifiers used to find and split the input used when invoking method GetSqlFromDebugOutput.
         /// </summary>
         public string[] SqlIdentifiers { get; set; }
+
+        /// <summary>
+        /// Filters used when determining Sql statements. Sql statements with these filters will be ignored. 
+        /// </summary>
+        public string[] IgnoreFilters { get; set; }
 
         /// <summary>
         /// Attempts to obtain Nhibernate sql statements from the Visual Studios debug output window and create a list of NHibernate.FormatSQL.Formatter.ISqlStatement objects.
@@ -41,8 +48,15 @@ namespace NHibernate.FormatSQL.Formatter
                     bool isSql = sqlStatementFactory.IsSql(possibleSqlStatement, out sql);
                     if (isSql)
                     {
-                        ISqlStatement sqlStatement = sqlStatementFactory.TryGetSqlStatementType(sql).Parse();
-                        SqlStatements.Add(sqlStatement);
+                        var ignoreFilterCount = IgnoreFilters.Count(f => 
+                        {
+                            return possibleSqlStatement.Contains(f);
+                        });
+                        if (ignoreFilterCount <= 0)
+                        {
+                            ISqlStatement sqlStatement = sqlStatementFactory.TryGetSqlStatementType(sql).Parse();
+                            SqlStatements.Add(sqlStatement);
+                        }
                     }
                 }
             }
@@ -122,6 +136,16 @@ namespace NHibernate.FormatSQL.Formatter
             }
 
             return SqlStatements;
+        }
+
+        /// <summary>
+        /// Creates a new instance of NHibernate.FormatSQL.Formatter.NHibernateSqlOutputFormatter.
+        /// </summary>
+        public NHibernateSqlOutputFormatter()
+        {
+            sqlStatementFactory = new SqlStatementFactory();
+            SqlIdentifiers = new string[] { };
+            IgnoreFilters = new string[] { };
         }
     }
 }

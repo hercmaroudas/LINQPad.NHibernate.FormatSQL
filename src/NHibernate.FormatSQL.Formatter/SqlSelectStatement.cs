@@ -45,6 +45,7 @@ namespace NHibernate.FormatSQL.Formatter
                     SetSelectParts();
                     SetFromParts();
                     SetOtherParts();
+                    SetTableNameAlias(FromPart.Value);
                     SetColumnNameAlias(SelectPart.Value);
                 }
             }
@@ -117,43 +118,33 @@ namespace NHibernate.FormatSQL.Formatter
         {
             try
             {
-                int indexOfLastWhere = 0;
-                string fromPart = string.Empty;
+                var indexOfLastWhere = 0;
+                var fromPart = string.Empty;
 
-                // ( count the number of braces until the braces match )
-                int openBraceCount = 0;
-                int closeBraceCount = 0;
-
-                int fromindex = Regex.Matches(Sql, @"\bfrom\b", RegexOptions.IgnoreCase).Count;
+                int fromindex = Regex.Matches(Sql.Substring(_lastFromIndex), @"\bfrom\b", RegexOptions.IgnoreCase).Count;
                 if (fromindex <= 0)
                     return;
 
-                var fromMatch = Regex.Match(Sql, @"\bfrom\b", RegexOptions.IgnoreCase);
-                var possibleFrom = Sql.Substring(fromMatch.Index + "from".Length + 1, (Sql.Length - fromMatch.Index) - ("from".Length + 1));
-                openBraceCount  = Regex.Matches(possibleFrom, @"\(").Count; 
-                closeBraceCount = Regex.Matches(possibleFrom, @"\)").Count;
-              
-                string fromStatement = Sql.Substring(_lastFromIndex, Sql.Length - _lastFromIndex);
-                var whereCount = Regex.Matches(Sql, "where", RegexOptions.IgnoreCase).Count;
-
-                int counter = 0;
-                // ( get the last where clause in from statement )
-                while (counter != whereCount)
-                {
-                    counter++;
-                    var whereMatch = Regex.Match(Sql.Substring(indexOfLastWhere + ("where".Length + 1), (Sql.Length - indexOfLastWhere) - ("where".Length + 1)), @"\bwhere\b", RegexOptions.IgnoreCase);
-                    indexOfLastWhere = indexOfLastWhere + (whereMatch.Index + "where".Length);
-                }
+                var fromStatement = Sql.Substring(_lastFromIndex, Sql.Length - _lastFromIndex);
+                var whereMatches = Regex.Matches(fromStatement, "where", RegexOptions.IgnoreCase);
 
                 // ( no from clause )
-                if (whereCount == 0)
+                if (whereMatches.Count == 0)
                 {
                     fromPart = Sql.Substring(_lastFromIndex + "from".Length + 1, fromStatement.Length - ("from".Length + 1));
                 }
                 // ( simple from clause )
                 else
                 {
+                    indexOfLastWhere = whereMatches[whereMatches.Count - 1].Index + (Sql.Length - fromStatement.Length);
+
                     fromPart = Sql.Substring(_lastFromIndex + "from".Length + 1, (indexOfLastWhere - _lastFromIndex) - ("from".Length + 1)).Trim();
+                }
+
+                // ( parameter still exists )
+                if (fromPart.Count(e => e == ';') > 1)
+                {
+                    fromPart = fromPart.Substring(0, fromPart.IndexOf(';') +  1);
                 }
 
                 // ( attempt to get the inline select statement ( this is select statements used as table names ) )
@@ -164,7 +155,6 @@ namespace NHibernate.FormatSQL.Formatter
 
                 // ( set the last index of the where clause found )
                 _lastWhereIndex = indexOfLastWhere;
-                SetTableNameAlias(fromPart);
             }
             catch 
             {
@@ -176,21 +166,30 @@ namespace NHibernate.FormatSQL.Formatter
         private void SetOtherParts()
         {
             string wherePart = string.Empty;
-            int indexOfOrderBy = Sql.ToLower().IndexOf("order", _lastWhereIndex);
 
-            int indexOfSemiColon = Sql.EnsureLastCharacterExists(';').IndexOf(";", _lastWhereIndex);
+            var whereIndex = Regex.Matches(Sql.Substring(_lastWhereIndex), @"\bwhere\b", RegexOptions.IgnoreCase).Count;
+            var orderbyMatches = Regex.Matches(Sql.Substring(_lastWhereIndex), @"\border by\b", RegexOptions.IgnoreCase);
+            
+            var indexOfOrderBy = orderbyMatches.Count > 0 ? (orderbyMatches[orderbyMatches.Count - 1].Index + _lastWhereIndex): 0;
+            var indexOfSemiColon = Sql.EnsureLastCharacterExists(';').IndexOf(";", _lastWhereIndex);
 
             // ( order by exists )
-            if (indexOfOrderBy >= 0)
+            if (indexOfOrderBy > 0)
             {
                 // ( +1 at end if wish to include the semi colon )
                 OrderByPart = Sql.Substring(indexOfOrderBy + "order by".Length + 1, (indexOfSemiColon - indexOfOrderBy) - ("order by".Length + 1));
-                wherePart = Sql.Substring(_lastWhereIndex + "where".Length + 1, (indexOfOrderBy - _lastWhereIndex) - ("where".Length + 1));
+                if (whereIndex > 0)
+                {
+                    wherePart = Sql.Substring(_lastWhereIndex + "where".Length + 1, (indexOfOrderBy - _lastWhereIndex) - ("where".Length + 1));
+                }
             }
             else
             {
-                // ( +1 at end if wish to include the semi colon )
-                wherePart = sqlStatementFactory.EnsureValueIsBetweenEvenBraces(Sql.Substring(_lastWhereIndex + "where".Length + 1, (indexOfSemiColon - _lastWhereIndex) - ("where".Length + 1)));
+                if (whereIndex > 0)
+                {
+                    // ( +1 at end if wish to include the semi colon )
+                    wherePart = sqlStatementFactory.EnsureValueIsBetweenEvenBraces(Sql.Substring(_lastWhereIndex + "where".Length + 1, (indexOfSemiColon - _lastWhereIndex) - ("where".Length + 1)));
+                }
             }
 
             WherePart = new SqlWherePart() { Value = wherePart };
@@ -212,10 +211,21 @@ namespace NHibernate.FormatSQL.Formatter
                 // ( columnNameAlias were looking at something like: table1.column1 as column1a )
                 string columnNameAlias = columnNameAliases[ix];
 
-                string[] tableColumnAliasName = columnNameAlias.SplitByWord(new string[] { "as", " " });
+                string[] tableColumnAliasName = new string[] { columnNameAlias };
+                bool asBetweenBraces = sqlStatementFactory.IsAsBetweenBraces(columnNameAlias);
+                if (!asBetweenBraces)
+                {
+                    tableColumnAliasName = columnNameAlias.SplitAndJoin(new string[] { "as", " " });
+                }
 
-                // ( get table and table alias ) 
-                if (tableColumnAliasName.Length > 0)
+                // ( get column name aliases ) 
+                if (tableColumnAliasName.Length == 1)
+                {
+                    // ( column alias does not exist )
+                    columnName = tableColumnAliasName[tableColumnAliasName.GetLowerBound(0)].Trim();
+                    ColumnNames.Add(new SqlColumnNameAliases() { ActualColumnName = columnName, OriginalAliasName = string.Empty, ProposedAliasName = string.Empty });
+                }
+                else if (tableColumnAliasName.Length > 0)
                 {
                     aliasName = tableColumnAliasName[tableColumnAliasName.Length - 1].Trim();
 
@@ -227,7 +237,7 @@ namespace NHibernate.FormatSQL.Formatter
                     {
                         tableColumnName = tableColumnNameArray[tableColumnNameArray.GetLowerBound(0)].Trim();
                     }
-                    // ( usually table and column name seperated by a period (.) )
+                    // ( usually table and column name separated by a period (.) )
                     else
                     {
                         tableColumnNameArray = tableColumnName.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
@@ -250,7 +260,7 @@ namespace NHibernate.FormatSQL.Formatter
                         if (!string.IsNullOrWhiteSpace(inlineSqlStatement.FromPart.Value))
                         {
                             fromSplit = inlineSqlStatement.FromPart.Value.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                            // ( get table name minues the period )
+                            // ( get table name minus the period )
                             if (fromSplit.Length > 0)
                             {
                                 fromColumnName = fromSplit[fromSplit.GetLowerBound(0)];
@@ -269,7 +279,7 @@ namespace NHibernate.FormatSQL.Formatter
                         {
                             if (Regex.Matches(inlineSqlStatement.WherePart.Value, @"\band\b", RegexOptions.IgnoreCase).Count > 0)
                             {
-                                whereSplit = inlineSqlStatement.WherePart.Value.SplitByWord(new string[] { "and" });
+                                whereSplit = inlineSqlStatement.WherePart.Value.SplitAndJoin(new string[] { "and" });
                             }
                             else
                             {
@@ -302,12 +312,19 @@ namespace NHibernate.FormatSQL.Formatter
                     else
                     {
                         // ( original column name to propose a column name alias )
-                        columnName = tableColumnNameArray[tableColumnNameArray.Length - 1].Replace(")", string.Empty).Replace("(", string.Empty).Replace("*", string.Empty);
+                        columnName = tableColumnNameArray[tableColumnNameArray.Length - 1]
+                            .Replace(")", string.Empty)
+                            .Replace("(", string.Empty)
+                            .Replace("*", string.Empty)
+                            .Replace("'", string.Empty);
 
                         // ( propose new alias name (add space for before as column ) )
                         if (columnName.Trim().Contains(" ") || columnName.Trim().Contains("."))
                         {
-                            poroposedAliasName = " " + string.Format("'{0}'", originalTableColumnName.Replace("_", string.Empty));
+                            // TODO: Fix column name aliases can not be larger than 128 characters long
+                            poroposedAliasName = " " + string.Format("'{0}'", originalTableColumnName
+                                .Replace("_", string.Empty)
+                                .Replace("'", string.Empty));
                         }
                         else
                         {
@@ -354,7 +371,7 @@ namespace NHibernate.FormatSQL.Formatter
             else
             {
                 // ( split by word (own extension otherwise split function removes characters containing on and join ) )
-                string[] fromSections = fromPart.ToLower().SplitByWord(new string[] { "on", "join" });
+                string[] fromSections = fromPart.ToLower().SplitAndJoin(new string[] { "on", "join" });
                 for (int ix = 0; ix < fromSections.Length; ix++)
                 {
                     string current = fromSections[ix];
@@ -367,11 +384,19 @@ namespace NHibernate.FormatSQL.Formatter
                             actualTableName = array[0].Trim();
                             originalAliasName = array[1].Trim();
 
-                            string[] tableNameSplit = actualTableName.Split(new string[] { "." }, StringSplitOptions.RemoveEmptyEntries);
-                            proposedAliasName = tableNameSplit.Length > 1
-                                ? uniqueNameFactory.GetUniqueName(tableNameSplit[tableNameSplit.Length - 1])
-                                : uniqueNameFactory.GetUniqueName(tableNameSplit[0]);
-
+                            if (originalAliasName.Contains("@"))
+                            {
+                                // ( this is occurring because the statement is a stored procedure )
+                                proposedAliasName = string.Empty;
+                                originalAliasName = string.Join(" ", array, 1, array.Length - 1);
+                            }
+                            else
+                            { 
+                                string[] tableNameSplit = actualTableName.Split(new string[] { "." }, StringSplitOptions.RemoveEmptyEntries);
+                                proposedAliasName = tableNameSplit.Length > 1
+                                    ? uniqueNameFactory.GetUniqueName(tableNameSplit[tableNameSplit.Length - 1])
+                                    : uniqueNameFactory.GetUniqueName(tableNameSplit[0]);
+                            }
                             TableNames.Add(new SqlTableNameAliases() { ActualTableName = actualTableName, OriginalTableAliasName = originalAliasName, ProposedTableAliasName = proposedAliasName });
                         }
                         // else error ? (not sure yet...)

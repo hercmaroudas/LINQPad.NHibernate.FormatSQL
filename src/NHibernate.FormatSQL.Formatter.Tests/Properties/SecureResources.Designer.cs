@@ -72,6 +72,15 @@ namespace NHibernate.FormatSQL.Formatter.Tests.Properties {
         /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
+        internal static string ColumnNameAliasQuotedValues {
+            get {
+                return ResourceManager.GetString("ColumnNameAliasQuotedValues", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
         internal static string ColumnNameAliasValue1 {
             get {
                 return ResourceManager.GetString("ColumnNameAliasValue1", resourceCulture);
@@ -102,6 +111,15 @@ namespace NHibernate.FormatSQL.Formatter.Tests.Properties {
         internal static string ColumnNameAliasValue4 {
             get {
                 return ResourceManager.GetString("ColumnNameAliasValue4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string NoColumnOrTableNameAliases {
+            get {
+                return ResourceManager.GetString("NoColumnOrTableNameAliases", resourceCulture);
             }
         }
         
