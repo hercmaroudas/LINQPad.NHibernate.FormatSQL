@@ -59,6 +59,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SecureResources.resx</DependentUpon>
     </Compile>
+    <Compile Include="SqlInsertStatementTest.cs" />
     <Compile Include="SqlStatementFactoryTests.cs" />
     <Compile Include="SqlStatementTests.cs" />
   </ItemGroup>
@@ -75,7 +76,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

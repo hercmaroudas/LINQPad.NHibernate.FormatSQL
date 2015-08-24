@@ -252,6 +252,15 @@ namespace NHibernate.FormatSQL.Formatter.Tests.Properties {
         /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
+        internal static string SQLInsert1 {
+            get {
+                return ResourceManager.GetString("SQLInsert1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
         internal static string SQLWhereExists {
             get {
                 return ResourceManager.GetString("SQLWhereExists", resourceCulture);

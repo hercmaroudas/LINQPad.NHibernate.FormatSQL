@@ -32,7 +32,7 @@ namespace NHibernate.FormatSQL.Formatter
 				return @this;
 
 			if (indexOfA + indexOfB == @this.Length)
-				return @this; // basicall send back [] 
+				return @this; // basically send back [] 
 
 			int start = keepChars ? indexOfA + 0 : indexOfA + 1;
 			int length = keepChars ? (indexOfB - indexOfA) + 1 : (indexOfB - indexOfA) - 1;
@@ -125,6 +125,12 @@ namespace NHibernate.FormatSQL.Formatter
 		/// <returns></returns>
 		public static string[] SplitByWord(this string @this, params string[] seperator)
 		{
+			return SplitByWord(@this, null, seperator);
+		}
+
+		
+		public static string[] SplitByWord(this string @this, string[] ignoreWords, params string[] seperator)
+		{
 			StringBuilder a = new StringBuilder();
 			List<string> returnList = new List<string>();
 
@@ -140,7 +146,19 @@ namespace NHibernate.FormatSQL.Formatter
 
 				if (seperatorExistsCount > 0)
 				{
-					returnList.Add(a.ToString());
+					if (ignoreWords == null)
+					{
+						returnList.Add(a.ToString());
+					}
+					else
+					{
+						// ( filter out word that we dont want included )
+						var ignoreWordFound = ignoreWords.Count(w => w.ToLower() == a.ToString().ToLower()) > 0;
+						if (!ignoreWordFound)
+						{
+							returnList.Add(a.ToString());
+						}
+					}
 					a = new StringBuilder();
 				}
 				else
@@ -154,9 +172,14 @@ namespace NHibernate.FormatSQL.Formatter
 			return returnList.ToArray();
 		}
 
+
 		public static string EnsureLastCharacterExists(this string @this, char character)
 		{
-			int indexOfCharacter = @this.IndexOf(character);
+			var indexOfCharacter = -1;
+            var characterMatces = Regex.Matches(@this, string.Format(@"\{0}", character));
+			if (characterMatces.Count > 0)
+				indexOfCharacter = characterMatces[characterMatces.Count - 1].Index;
+	
 			if (indexOfCharacter == @this.Trim().Length-1)
 				return @this;
 			else

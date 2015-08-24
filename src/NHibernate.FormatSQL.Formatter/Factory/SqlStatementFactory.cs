@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace NHibernate.FormatSQL.Formatter
 {
@@ -76,6 +78,9 @@ namespace NHibernate.FormatSQL.Formatter
         {
             try
             {
+                var startIndex = 0;
+                var keywordIndexer = new List<KeyWordIndexer>();
+
                 // ( replace all carriage return, newlines and spaces with an empty string ) 
                 possibleSql = Regex.Replace(value, @"\r\n|\n$|^\s+|\s+$", " ");
 
@@ -85,19 +90,27 @@ namespace NHibernate.FormatSQL.Formatter
                     {
                         string search = string.Format(@"\b{0}\b", keyword);
                         var match = Regex.Match(possibleSql, search, RegexOptions.IgnoreCase);
-                        int startIndex = match.Index;
                         if (match.Success)
                         {
-                            string nextChar = possibleSql.Substring(match.Index + keyword.Length, 1);
-                            if (string.IsNullOrWhiteSpace(nextChar))
-                            {
-                                possibleSql = possibleSql.Substring(startIndex, possibleSql.Length - startIndex).Trim().EnsureLastCharacterExists(';');
-                                return true;
-                            }
+                            keywordIndexer.Add(new KeyWordIndexer() { MatchIndex = match.Index, KeyWord = keyword });
                         }
                     }
                 }
 
+                if (keywordIndexer.Count > 0)
+                {
+                    // ( Get the first found keyword in the string )
+                    var item = keywordIndexer.OrderBy(k => k.MatchIndex).FirstOrDefault();
+                    startIndex = item.MatchIndex;
+
+                    string nextChar = possibleSql.Substring(item.MatchIndex + item.KeyWord.Length, 1);
+                    if (string.IsNullOrWhiteSpace(nextChar))
+                    {
+                        possibleSql = possibleSql.Substring(startIndex, possibleSql.Length - startIndex).Trim().EnsureLastCharacterExists(';');
+                        return true;
+                    }
+                }
+                
                 possibleSql = string.Empty;
             }
             catch 
@@ -107,6 +120,14 @@ namespace NHibernate.FormatSQL.Formatter
             return false;
         }
 
+
+        // need to add sql to collection and sort to get the first occurrence of the sql keyword type. 
+        private struct KeyWordIndexer
+        {
+            public int MatchIndex { get; set; }
+            public string KeyWord { get; set; }
+        }
+
         /// <summary>
         /// Determines if the value passed in is a valid sql statement and if it contains a from part.
         /// </summary>
@@ -114,7 +135,7 @@ namespace NHibernate.FormatSQL.Formatter
         /// The value to parse.
         /// </param>
         /// <param name="possibleSql">
-        /// The sql that is outputed if value is valid sql.
+        /// The sql that is outputted if value is valid sql.
         /// </param>
         /// <returns>
         /// True if the select statement contains a from clause.

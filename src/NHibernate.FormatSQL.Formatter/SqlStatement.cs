@@ -39,7 +39,7 @@ namespace NHibernate.FormatSQL.Formatter
 
         public abstract ISqlStatement Parse();
 
-        // ( attempts to set the parameter and values in an organised list of key value pairs )
+        // ( attempts to set the parameter and values in an organized list of key value pairs )
         internal virtual void SetParameterKeyValuePairs()
         {
             int paramStartIndex = 0;
@@ -54,8 +54,7 @@ namespace NHibernate.FormatSQL.Formatter
                 if (!string.IsNullOrWhiteSpace(parameterSection))
                 {
                     sqlSection = Sql.Substring(0, paramStartIndex + 1).Replace(";", string.Empty).Trim();
-                    var parameters = parameterSection.SplitByWord(new string[] { "=", "," });
-
+                    var parameters = parameterSection.SplitByWord(new string[] { "select scope_identity()" }, new string[] { "=", ",", ";" });
                     if (parameters.Length > 1)
                     {
                         // ( parse parameters )

@@ -180,6 +180,9 @@
   <data name="SQL9" xml:space="preserve">
     <value />
   </data>
+  <data name="SQLInsert1" xml:space="preserve">
+    <value />
+  </data>
   <data name="SQLWhereExists" xml:space="preserve">
     <value />
   </data>
